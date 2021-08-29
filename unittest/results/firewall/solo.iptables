@@ -1,0 +1,32 @@
+*filter
+
+### Server: "solo"
+### Hostname: "solo"
+### IPs: [0.0.0.0, 127.0.0.150]
+
+#######################
+# Global Rules Before #
+#######################
+-F
+-P INPUT DROP
+-P FORWARD DROP
+-P OUTPUT DROP
+-A INPUT -i lo -j ACCEPT
+-A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+-A OUTPUT -j ACCEPT
+# GLOBAL BEFORE: myip: 255.255.255.255
+
+######################
+# Global Rules After #
+######################
+-A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+-N LOGGING
+-A INPUT -j LOGGING
+-A OUTPUT -j LOGGING
+-A LOGGING -m limit --limit 5/min -j LOG --log-prefix "IPTables Packet Dropped: " --log-level 7
+-A LOGGING -j DROP
+# GLOBAL AFTER: myip: 255.255.255.255
+
+### COMMIT !!!
+
+COMMIT

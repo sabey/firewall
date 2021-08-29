@@ -1,0 +1,52 @@
+*filter
+
+### Server: "MyPC"
+### Hostname: "home"
+### IPs: [192.168.1.13]
+
+#######################
+# Global Rules Before #
+#######################
+-F
+-P INPUT DROP
+-P FORWARD DROP
+-P OUTPUT DROP
+-A INPUT -i lo -j ACCEPT
+-A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+-A OUTPUT -j ACCEPT
+# GLOBAL BEFORE: myip: 255.255.255.255
+
+############
+# Networks #
+############
+### Network: lan
+### IP: 192.168.1.13
+######################
+## Passive Services ##
+######################
+### Service: SSH
+-A INPUT -p tcp --src 255.255.255.255 --dport 22 -j ACCEPT
+# IP: 192.168.1.13 Port: 22 MyIP: 255.255.255.255 MyPubKey: 0a:0b:0c:0d:0e:0f:00:01:02:03:04:05:06:07:08:09
+#########################
+## Dependency Services ##
+#########################
+### Service: ssh
+## Source Server: MediaServer
+## Source Hostname: media-server
+## Source IP:Port: 192.168.1.31:22
+-A INPUT -p tcp --src 192.168.1.31 --dport 22 -j -i lan ACCEPT
+
+######################
+# Global Rules After #
+######################
+-A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+-N LOGGING
+-A INPUT -j LOGGING
+-A OUTPUT -j LOGGING
+-A LOGGING -m limit --limit 5/min -j LOG --log-prefix "IPTables Packet Dropped: " --log-level 7
+-A LOGGING -j DROP
+# GLOBAL AFTER: myip: 255.255.255.255
+
+### COMMIT !!!
+
+COMMIT
